@@ -5,127 +5,76 @@
  * @format
  */
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import {SafeAreaView, StatusBar, StyleSheet} from 'react-native';
+import {WebView} from 'react-native-webview';
+import messaging from '@react-native-firebase/messaging';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+export default function App(): React.JSX.Element {
+  const webViewRef = useRef<WebView>(null);
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+  const injectFCMToken = async () => {
+    try {
+      // FCM 권한 요청
+      const authStatus = await messaging().requestPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+      if (!enabled) {
+        console.log('FCM permission denied');
+        return;
+      }
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+      // FCM 토큰 가져오기
+      const fcmToken = await messaging().getToken();
+      if (!fcmToken) {
+        console.log('Failed to get FCM token');
+        return;
+      }
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+      // WebView에 FCM 토큰 주입
+      const script = `
+        (function() {
+          // 로그인 폼이 있는지 확인
+          const loginForm = document.querySelector('form');
+          if (loginForm) {
+            // FCM 토큰을 hidden input으로 추가
+            const fcmInput = document.createElement('input');
+            fcmInput.type = 'hidden';
+            fcmInput.name = 'fcmToken';
+            fcmInput.value = '${fcmToken}';
+            loginForm.appendChild(fcmInput);
+          }
+        })();
+      `;
+
+      webViewRef.current?.injectJavaScript(script);
+    } catch (error) {
+      console.error('Error injecting FCM token:', error);
+    }
   };
 
-  /*
-   * To keep the template simple and small we're adding padding to prevent view
-   * from rendering under the System UI.
-   * For bigger apps the recommendation is to use `react-native-safe-area-context`:
-   * https://github.com/AppAndFlow/react-native-safe-area-context
-   *
-   * You can read more about it here:
-   * https://github.com/react-native-community/discussions-and-proposals/discussions/827
-   */
-  const safePadding = '5%';
-
   return (
-    <View style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        style={backgroundStyle}>
-        <View style={{paddingRight: safePadding}}>
-          <Header/>
-        </View>
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-            paddingHorizontal: safePadding,
-            paddingBottom: safePadding,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+      <WebView  
+        ref={webViewRef}
+        source={{uri: 'https://www.travelwithme.co.kr/'}}
+        style={styles.webview}
+        onLoadEnd={injectFCMToken}
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+      /> 
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flex: 1,
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  webview: {
+    flex: 1,
   },
 });
-
-export default App;

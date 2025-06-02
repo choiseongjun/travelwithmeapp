@@ -10,8 +10,12 @@
     "test": "jest"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^1.24.0",
+    "@react-native-firebase/app": "^22.2.0",
+    "@react-native-firebase/messaging": "^22.2.0",
     "react": "19.0.0",
-    "react-native": "0.79.2"
+    "react-native": "0.79.2",
+    "react-native-webview": "^13.14.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
