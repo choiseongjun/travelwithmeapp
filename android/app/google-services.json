@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1000900505639",
+    "project_id": "travelwithme-6f497",
+    "storage_bucket": "travelwithme-6f497.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1000900505639:android:543e830d3a37b39e2e5e02",
+        "android_client_info": {
+          "package_name": "com.travelwithmeapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAI4ulGceppdAEfpxPddKCAdpEQfwXNR2g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
